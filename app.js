@@ -31,12 +31,12 @@ function createAccount (account) {
 function getAccount (accountName) {
   var accounts = storage.getItemSync('accounts');
   var mathcedAccount;
- accounts.forEach(account => {
-   if (account.name === accountName) {
-    mathcedAccount = account;
-   }
- })
-  return mathcedAccount
+  accounts.forEach(account => {
+    if (account.name === accountName) {
+      mathcedAccount = account;
+    }
+  });
+  return mathcedAccount;
 }
 
 // createAccount({
