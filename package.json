@@ -10,6 +10,7 @@
   "author": "luca confalonieri",
   "license": "ISC",
   "dependencies": {
+    "crypto-js": "^3.1.9-1",
     "node-persist": "^2.1.0",
     "yargs": "^9.0.1"
   }

@@ -1,4 +1,6 @@
 let storage = require('node-persist');
+let crypto = require('crypto-js');
+
 storage.initSync();
 
 let argv = require('yargs')
@@ -21,6 +23,12 @@ let argv = require('yargs')
         alias: 'p',
         descritpion: 'Account password',
         type: 'string'
+      },
+      masterPassword: {
+        demand: true,
+        alias: 'm',
+        descritpion: 'Master password',
+        type: 'string'
       }
     }).help('help');
   })
@@ -31,6 +39,12 @@ let argv = require('yargs')
         alias: 'n',
         description: 'Account name, example: twitter, facebook',
         type: 'string'
+      },
+      masterPassword: {
+        demand: true,
+        alias: 'm',
+        descritpion: 'Master password',
+        type: 'string'
       }
     }).help('help');
   })
@@ -40,35 +54,33 @@ let argv = require('yargs')
 let command = argv._[0];
 
 /**
- * Create account
+ * 
  * 
  * @param {any} account 
- * account: {
- *  name: 
- *  username:
- *  password
- * }
+ * @param {any} masterPassword 
+ * @returns 
  */
-function createAccount(account) {
-  var accounts = storage.getItemSync('accounts');
+function createAccount(account, masterPassword) {
+  var accounts = getAccounts(masterPassword);
 
   if (typeof accounts === 'undefined') {
     accounts = [];
   }
 
   accounts.push(account);
-  storage.setItemSync('accounts', accounts);
+  saveAccounts(accounts, masterPassword);
   return account;
 }
 
 /**
- * Get account by name
+ * 
  * 
  * @param {any} accountName 
+ * @param {any} masterPassword 
  * @returns 
  */
-function getAccount(accountName) {
-  var accounts = storage.getItemSync('accounts');
+function getAccount(accountName, masterPassword) {
+  var accounts = getAccounts(masterPassword);
   var mathcedAccount;
   accounts.forEach(account => {
     if (account.name === accountName) {
@@ -78,17 +90,48 @@ function getAccount(accountName) {
   return mathcedAccount;
 }
 
+/**
+ * 
+ * 
+ * @param {any} masterPassword 
+ * @returns 
+ */
+function getAccounts(masterPassword) {
+  let accounts = [];
+  let encryptedAccounts = storage.getItemSync('accounts');
+  if(typeof encryptedAccounts != 'undefined') {
+    let bytes = crypto.AES.decrypt(encryptedAccounts, masterPassword);
+    accounts = JSON.parse(bytes.toString(crypto.enc.Utf8));
+  }
+
+  return accounts;
+}
+
+/**
+ * 
+ * 
+ * @param {any} accounts 
+ * @param {any} masterPassword 
+ * @returns 
+ */
+function saveAccounts(accounts, masterPassword) {
+  let encryptedAccounts = crypto.AES.encrypt(JSON.stringify(accounts), masterPassword);
+  storage.setItemSync('accounts', encryptedAccounts.toString());
+
+  return accounts;
+}
+
 switch (command) {
 case 'create':
   var accountCreated = createAccount({
     name: argv.name,
     username: argv.username,
-    password: argv.password
-  });
+    password: argv.password,
+  }, argv.masterPassword);
   console.log('Account created', accountCreated);
   break;
 case 'get':
-  var fetchedAccount = getAccount(argv.name);
+  var fetchedAccount = getAccount(argv.name, argv.masterPassword);
   if (typeof fetchedAccount == 'undefined') {
     console.log('Account not found');
   } else {
