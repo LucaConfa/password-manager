@@ -123,18 +123,27 @@ function saveAccounts(accounts, masterPassword) {
 
 switch (command) {
 case 'create':
-  var accountCreated = createAccount({
-    name: argv.name,
-    username: argv.username,
-    password: argv.password,
-  }, argv.masterPassword);
-  console.log('Account created', accountCreated);
+  try{
+    var accountCreated = createAccount({
+      name: argv.name,
+      username: argv.username,
+      password: argv.password,
+    }, argv.masterPassword);
+    console.log('Account created', accountCreated);
+  } catch(error) {
+    console.log('Unable to create account');
+  }
   break;
 case 'get':
-  var fetchedAccount = getAccount(argv.name, argv.masterPassword);
-  if (typeof fetchedAccount == 'undefined') {
-    console.log('Account not found');
-  } else {
-    console.log('Account found', fetchedAccount);
+  try{
+    var fetchedAccount = getAccount(argv.name, argv.masterPassword);
+    if (typeof fetchedAccount == 'undefined') {
+      console.log('Account not found');
+    } else {
+      console.log('Account found', fetchedAccount);
+    }
+  } catch (error) {
+    console.log('Unable to fetch account');
   }
+  break;
 }
